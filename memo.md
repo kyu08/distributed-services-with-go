@@ -20,3 +20,6 @@
 - 言語寛容性
 - パフォーマンス
 
+※protoファイルからgoコードを生成する前に別途`$ brew install protoc-gen-go`する必要があった
+
+
