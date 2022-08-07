@@ -49,7 +49,6 @@ func (s *httpServer) handleProduce(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	var req ProduceRequest
-	// TODO: if文のなかでかけるか試してみる
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -62,7 +61,6 @@ func (s *httpServer) handleProduce(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	res := ProduceResponse{Offset: off}
-	// TODO: これでresかえるの？
 	err = json.NewEncoder(w).Encode(res)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
