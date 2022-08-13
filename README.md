@@ -1,3 +1,35 @@
+# go versionについて
+1.18.5だとうまく動かなかったので1.18をローカルにインストールした
+
+## 以下経緯とやったこと
+### 起きていたこと
+`go test ./...`とか`go build ./cmd/server/main.go`とかすると以下のようなエラーが出てしまっていた。
+<details>
+<summary>エラー内容</summary>
+# crypto/cipher
+/opt/homebrew/Cellar/go/1.18.5/libexec/src/crypto/cipher/gcm.go:139:20: binary.BigEndian.Uint64 undefined (type binary.bigEndian has no field or method Uint64)
+/opt/homebrew/Cellar/go/1.18.5/libexec/src/crypto/cipher/gcm.go:140:20: binary.BigEndian.Uint64 undefined (type binary.bigEndian has no field or method Uint64)
+/opt/homebrew/Cellar/go/1.18.5/libexec/src/crypto/cipher/gcm.go:325:29: binary.BigEndian.Uint64 undefined (type binary.bigEndian has no field or method Uint64)
+/opt/homebrew/Cellar/go/1.18.5/libexec/src/crypto/cipher/gcm.go:326:30: binary.BigEndian.Uint64 undefined (type binary.bigEndian has no field or method Uint64)
+# crypto/md5
+/opt/homebrew/Cellar/go/1.18.5/libexec/src/crypto/md5/md5.go:103:33: binary.BigEndian.Uint64 undefined (type binary.bigEndian has no field or method Uint64)
+# math/big
+/opt/homebrew/Cellar/go/1.18.5/libexec/src/math/big/nat.go:1185:32: binary.BigEndian.Uint64 undefined (type binary.bigEndian has no field or method Uint64)
+</details>
+go1.18.0環境のDockerコンテナを立てて同じコマンドを実行したところ問題なく実行できたのでgo1.18.5だとうまく動かないっぽいことがわかった。
+
+### やったこと
+```shell
+which go
+// /opt/homebrew/bin/go
+brew uninstall go
+which go
+// /usr/local/go/bin/go
+go version
+// go version go1.18 darwin/amd64
+// よさそう
+```
+
 # 2章 プロトコルバッファによる構造化データ
 - 非公開のAPIを構築する場合、JSONに比べて生産性が高く、速く、多くの機能をもち、バグのすくないサービスを作ることができるデータの構造化と送信の機構を利用するべき
 - その機構はプロトコルバッファ(Protocol Buffers: protobufとも)である。
