@@ -86,7 +86,7 @@ func (s *segment) Append(record *api.Record) (offset uint64, err error) {
 
 	// インデックスファイルにレコードのオフセットと位置を書き込み
 	if err = s.index.Write(uint32(s.nextOffset-uint64(s.baseOffset)), pos); err != nil {
-		return 0, nil
+		return 0, err
 	}
 	s.nextOffset++
 	return cur, nil
@@ -111,6 +111,7 @@ func (s *segment) Read(off uint64) (*api.Record, error) {
 }
 
 func (s *segment) IsMaxed() bool {
+	fmt.Printf("s.store.size: %v\n", s.store.size)
 	return s.store.size >= s.config.Segment.MaxStoreBytes ||
 		s.index.size >= s.config.Segment.MaxIndexBytes ||
 		s.index.isMaxed()
