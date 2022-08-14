@@ -71,6 +71,7 @@ func (i *index) Read(in int64) (out uint32, pos uint64, err error) {
 		return 0, 0, io.EOF
 	}
 
+	// in == -1のときは末尾の要素を返す
 	if in == -1 {
 		out = uint32((i.size / entWidth) - 1)
 	} else {
