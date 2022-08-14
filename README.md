@@ -96,10 +96,10 @@ go version
        offset部   position部        offset部   position部        offset部   position部        ...
 ...****===========******************===========******************===========******************...
       ↑ pos      ↑ pos+offWidth    ↑ pos+entWidth
-       |          |                 |
-        ←-------→  ←--------------→
-        offWidth        posWidth
-        ←-------------------------→
-                  entWidth
+      |          |                 |
+      <----------><---------------->
+        offWidth       posWidth
+      <---------------------------->
+               entWidth
 
 ```
