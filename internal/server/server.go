@@ -4,10 +4,21 @@ import (
 	"context"
 
 	api "github.com/kyu08/distributed-services-with-go/api/v1"
+	"google.golang.org/grpc"
 )
 
 type Config struct {
 	CommitLog CommitLog
+}
+
+func NewGRPCServer(config *Config) (*grpc.Server, error) {
+	gsrv := grpc.NewServer()
+	srv, err := newgrpcServer(config)
+	if err != nil {
+		return nil, err
+	}
+	api.RegisterLogServer(gsrv, srv)
+	return gsrv, nil
 }
 
 type CommitLog interface {
