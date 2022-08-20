@@ -148,6 +148,16 @@ go version
 
 ## 5.2 TLSによるサーバの認証
 ### 5.2.1 CFSSLで独自のCAとして運用
+- 第三者機関のCA(Certification Authority: 認証局)を使って証明書を取得することもできるが、費用がかかることもあるし手間もかかるのでここでは自分が運営するCAから発行する。
+- ここではCloudFlareが開発してCFSSLというツールを使って証明書を発行する
+```shell
+# 次のコマンドで cfssl, cfssljsonをインストールする
+$ go install github.com/cloudflare/cfssl/cmd/cfssl@v1.6.1
+$ go install github.com/cloudflare/cfssl/cmd/cfssljson@v1.6.1
+```
+- cfsslはTLS証明書の署名・検証・バンドルを行い、結果をJSONとして出力する
+- cfssljsonはJSON出力を受け取り、鍵・証明書・CSR・バンドルのファイルに分割する
+
 ## 5.3 相互TLS認証によるクライアントの認証
 ## 5.4 アクセスコントロールリストによる認可
 ## 5.5 学んだこと
