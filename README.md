@@ -158,6 +158,41 @@ $ go install github.com/cloudflare/cfssl/cmd/cfssljson@v1.6.1
 - cfsslはTLS証明書の署名・検証・バンドルを行い、結果をJSONとして出力する
 - cfssljsonはJSON出力を受け取り、鍵・証明書・CSR・バンドルのファイルに分割する
 
+- `/test/ca-csr.json`に以下の内容を記述する
+```json
+{
+  "CN": "My Awesome CA",
+  "key": {
+    "algo": "rsa",
+    "size": 2048
+  },
+  "names": [
+    {
+      "C": "CA",
+      "L": "ON",
+      "ST": "Toronto",
+      "O": "My Awesome Company",
+      "OU": "CA Services"
+    }
+  ]
+}
+```
+
+- cfsslはこのファイルを使ってCAの証明書を設定する。
+- CNはCommon Nameの略で私たちのCAをMy Awesome CAと呼んでいるよ
+- keyは証明書に署名するためのアルゴリズムと鍵のサイズを指定する
+- namesは証明書に追加されるさまざまな名前情報のリストで、**少なくとも1つのC、L、ST、O、OUの値を含める必要がある**
+  - C: 国(Country)
+  - L: 地域(locality)や自治体(市など)
+  - ST: 州(state)や県
+  - O: 組織(organization)
+  - OU: 組織単位(organization unit、鍵の所有権を持つ部署など)
+- CAのポリシーを定義するために次の内容の`test/ca-config.json`を作成する
+
+```json
+```
+
+
 ## 5.3 相互TLS認証によるクライアントの認証
 ## 5.4 アクセスコントロールリストによる認可
 ## 5.5 学んだこと
