@@ -190,8 +190,32 @@ $ go install github.com/cloudflare/cfssl/cmd/cfssljson@v1.6.1
 - CAのポリシーを定義するために次の内容の`test/ca-config.json`を作成する
 
 ```json
+{
+  "signing": {
+    "profiles": {
+      "server": {
+        "expiry": "8760h",
+          "usages": [
+          "signing",
+          "key encipherment",
+          "server auth"
+          ]
+      },
+        "client": {
+          "expiry": "8760h",
+          "usages": [
+          "signing",
+          "key encipherment",
+          "client auth"
+          ]
+        }
+    }
+  }
+}
 ```
-
+- どのような種類の証明書を発行するのかを記述
+- signingセクションではCAの署名ポリシーを定義
+- ここでは、、CAは1年後に失効するクライアント証明書とサーバ証明書を生成でき、その証明書はデジタル署名・暗号化鍵・認証に使えるとしている
 
 ## 5.3 相互TLS認証によるクライアントの認証
 ## 5.4 アクセスコントロールリストによる認可
