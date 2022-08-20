@@ -196,17 +196,17 @@ $ go install github.com/cloudflare/cfssl/cmd/cfssljson@v1.6.1
       "server": {
         "expiry": "8760h",
           "usages": [
-          "signing",
-          "key encipherment",
-          "server auth"
+            "signing",
+            "key encipherment",
+            "server auth"
           ]
       },
         "client": {
           "expiry": "8760h",
           "usages": [
-          "signing",
-          "key encipherment",
-          "client auth"
+            "signing",
+            "key encipherment",
+            "client auth"
           ]
         }
     }
@@ -216,6 +216,34 @@ $ go install github.com/cloudflare/cfssl/cmd/cfssljson@v1.6.1
 - どのような種類の証明書を発行するのかを記述
 - signingセクションではCAの署名ポリシーを定義
 - ここでは、、CAは1年後に失効するクライアント証明書とサーバ証明書を生成でき、その証明書はデジタル署名・暗号化鍵・認証に使えるとしている
+
+testディレクトリに`server-csr.json`を作成し、次の内容をJSONに書き込む
+```json
+{
+  "CN": "127.0.0.1",
+    "host": [
+      "localhost",
+      "127.0.0.1"
+    ],
+    "key": {
+      "algo": "rsa",
+      "size": 2048
+    },
+    "names": [
+      {
+        "C": "CA",
+        "L": "ON",
+        "ST": "Toronto",
+        "O": "My Awesome Company",
+        "OU": "Distributed Services"
+      }
+    ]
+}
+```
+- cfsslはこれらの設定を使って証明書を設定する
+- hostsフィールドは証明書が有効なドメイン名の一覧
+
+Makefileを更新して、証明書を生成するためのコマンドを定義する
 
 ## 5.3 相互TLS認証によるクライアントの認証
 ## 5.4 アクセスコントロールリストによる認可
@@ -228,3 +256,12 @@ $ go install github.com/cloudflare/cfssl/cmd/cfssljson@v1.6.1
 次の章では、メトリクス・ログ・トレースを追加してサービスを監視可能にする。
 
 
+
+internal/config/files.go をつくるところからーーーーーーーーーーーー
+internal/config/files.go をつくるところからーーーーーーーーーーーー
+internal/config/files.go をつくるところからーーーーーーーーーーーー
+internal/config/files.go をつくるところからーーーーーーーーーーーー
+internal/config/files.go をつくるところからーーーーーーーーーーーー
+internal/config/files.go をつくるところからーーーーーーーーーーーー
+internal/config/files.go をつくるところからーーーーーーーーーーーー
+internal/config/files.go をつくるところからーーーーーーーーーーーー
