@@ -255,13 +255,3 @@ Makefileを更新して、証明書を生成するためのコマンドを定義
 の3ステップである。
 次の章では、メトリクス・ログ・トレースを追加してサービスを監視可能にする。
 
-
-
-internal/config/files.go をつくるところからーーーーーーーーーーーー
-internal/config/files.go をつくるところからーーーーーーーーーーーー
-internal/config/files.go をつくるところからーーーーーーーーーーーー
-internal/config/files.go をつくるところからーーーーーーーーーーーー
-internal/config/files.go をつくるところからーーーーーーーーーーーー
-internal/config/files.go をつくるところからーーーーーーーーーーーー
-internal/config/files.go をつくるところからーーーーーーーーーーーー
-internal/config/files.go をつくるところからーーーーーーーーーーーー
