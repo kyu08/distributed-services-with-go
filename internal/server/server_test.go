@@ -4,6 +4,7 @@ import (
 	"context"
 
 	api "github.com/kyu08/distributed-services-with-go/api/v1"
+	"github.com/kyu08/distributed-services-with-go/internal/auth"
 	"github.com/kyu08/distributed-services-with-go/internal/config"
 	"github.com/kyu08/distributed-services-with-go/internal/log"
 	"github.com/stretchr/testify/require"
@@ -37,6 +38,7 @@ func TestServer(t *testing.T) {
 
 func setupTest(t *testing.T, fn func(*Config)) (
 	rootClient api.LogClient,
+	nobodyClient api.LogClient,
 	cfg *Config,
 	teardown func(),
 ) {
@@ -45,22 +47,37 @@ func setupTest(t *testing.T, fn func(*Config)) (
 	l, err := net.Listen("tcp", "127.0.0.1:0")
 	require.NoError(t, err)
 
-	clientTLSConfig, err := config.SetupTLSConfig(config.TLSConfig{
-		CertFile: config.ClientCertFile,
-		KeyFile:  config.ClientKeyFile,
-		CAFile:   config.CAFile,
-	})
-	require.NoError(t, err)
+	newClient := func(crtPath, keyPath string) (
+		*grpc.ClientConn,
+		api.LogClient,
+		[]grpc.DialOption,
+	) {
+		tlsConfig, err := config.SetupTLSConfig(config.TLSConfig{
+			CertFile: crtPath,
+			KeyFile:  keyPath,
+			CAFile:   config.CAFile,
+			Server:   false,
+		})
+		require.NoError(t, err)
+		tlsCreds := credentials.NewTLS(tlsConfig)
+		opts := []grpc.DialOption{grpc.WithTransportCredentials(tlsCreds)}
+		conn, err := grpc.Dial(l.Addr().String(), opts...)
+		require.NoError(t, err)
+		client := api.NewLogClient(conn)
+		return conn, client, opts
+	}
 
-	clientCreds := credentials.NewTLS(clientTLSConfig)
-	cc, err := grpc.Dial(
-		l.Addr().String(),
-		grpc.WithTransportCredentials(clientCreds),
+	var rootConn *grpc.ClientConn
+	rootConn, rootClient, _ = newClient(
+		config.RootClientCertFile,
+		config.RootClientKeyFile,
 	)
-	require.NoError(t, err)
 
-	client := api.NewLogClient(cc)
-
+	var nobodyConn *grpc.ClientConn
+	nobodyConn, nobodyClient, _ = newClient(
+		config.NobodyClientCertFile,
+		config.NobodyClientKeyFile,
+	)
 	serverTLSConfig, err := config.SetupTLSConfig(config.TLSConfig{
 		CertFile:      config.ServerCertFile,
 		KeyFile:       config.ServerKeyFile,
@@ -76,11 +93,15 @@ func setupTest(t *testing.T, fn func(*Config)) (
 
 	clog, err := log.NewLog(dir, log.Config{})
 	require.NoError(t, err)
-	cfg = &Config{CommitLog: clog}
+
+	authorizer := auth.New(config.ACLModelFile, config.ACLPolicyFile)
+	cfg = &Config{
+		CommitLog:  clog,
+		Authorizer: authorizer,
+	}
 	if fn != nil {
 		fn(cfg)
 	}
-
 	server, err := NewGRPCServer(cfg, grpc.Creds(serverCreds))
 	require.NoError(t, err)
 
@@ -88,8 +109,9 @@ func setupTest(t *testing.T, fn func(*Config)) (
 		server.Serve(l)
 	}()
 
-	return client, cfg, func() {
-		cc.Close()
+	return rootClient, nobodyClient, cfg, func() {
+		rootConn.Close()
+		nobodyConn.Close()
 		server.Stop()
 		l.Close()
 	}

@@ -8,7 +8,12 @@ import (
 )
 
 type Config struct {
-	CommitLog CommitLog
+	CommitLog  CommitLog
+	Authorizer Authorizer
+}
+
+type Authorizer interface {
+	Authorize(subject, object, action string) error
 }
 
 func NewGRPCServer(config *Config, grpcOpts ...grpc.ServerOption) (*grpc.Server, error) {
