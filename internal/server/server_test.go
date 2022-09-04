@@ -21,7 +21,8 @@ import (
 func TestServer(t *testing.T) {
 	for scenario, fn := range map[string]func(
 		t *testing.T,
-		client api.LogClient,
+		rootClient api.LogClient,
+		nobodyClient api.LogClient,
 		config *Config,
 	){
 		"produce/consume a message to/from the log succeeds": testProduceConsume,
@@ -29,9 +30,9 @@ func TestServer(t *testing.T) {
 		"consume past log boundary fails":                    testConsumePastBoundary,
 	} {
 		t.Run(scenario, func(t *testing.T) {
-			client, config, teardown := setupTest(t, nil)
+			rootClient, nobodyClient, config, teardown := setupTest(t, nil)
 			defer teardown()
-			fn(t, client, config)
+			fn(t, rootClient, nobodyClient, config)
 		})
 	}
 }
@@ -63,8 +64,8 @@ func setupTest(t *testing.T, fn func(*Config)) (
 		opts := []grpc.DialOption{grpc.WithTransportCredentials(tlsCreds)}
 		conn, err := grpc.Dial(l.Addr().String(), opts...)
 		require.NoError(t, err)
-		client := api.NewLogClient(conn)
-		return conn, client, opts
+		rootClient := api.NewLogClient(conn)
+		return conn, rootClient, opts
 	}
 
 	var rootConn *grpc.ClientConn
@@ -117,14 +118,14 @@ func setupTest(t *testing.T, fn func(*Config)) (
 	}
 }
 
-func testProduceConsume(t *testing.T, client api.LogClient, config *Config) {
+func testProduceConsume(t *testing.T, rootClient api.LogClient, nobodyClient api.LogClient, config *Config) {
 	ctx := context.Background()
 
 	want := &api.Record{
 		Value: []byte("hello world"),
 	}
 
-	produce, err := client.Produce(
+	produce, err := rootClient.Produce(
 		ctx,
 		&api.ProduceRequest{
 			Record: want,
@@ -133,7 +134,7 @@ func testProduceConsume(t *testing.T, client api.LogClient, config *Config) {
 	require.NoError(t, err)
 	want.Offset = produce.Offset
 
-	consume, err := client.Consume(ctx, &api.ConsumeRequest{
+	consume, err := rootClient.Consume(ctx, &api.ConsumeRequest{
 		Offset: produce.Offset,
 	})
 	require.NoError(t, err)
@@ -143,19 +144,20 @@ func testProduceConsume(t *testing.T, client api.LogClient, config *Config) {
 
 func testConsumePastBoundary(
 	t *testing.T,
-	client api.LogClient,
+	rootClient api.LogClient,
+	nobodyClient api.LogClient,
 	config *Config,
 ) {
 	ctx := context.Background()
 
-	produce, err := client.Produce(ctx, &api.ProduceRequest{
+	produce, err := rootClient.Produce(ctx, &api.ProduceRequest{
 		Record: &api.Record{
 			Value: []byte("hello world"),
 		},
 	})
 	require.NoError(t, err)
 
-	consume, err := client.Consume(ctx, &api.ConsumeRequest{
+	consume, err := rootClient.Consume(ctx, &api.ConsumeRequest{
 		Offset: produce.Offset + 1,
 	})
 	if consume != nil {
@@ -170,7 +172,8 @@ func testConsumePastBoundary(
 
 func testProduceConsumeStream(
 	t *testing.T,
-	client api.LogClient,
+	rootClient api.LogClient,
+	nobodyClient api.LogClient,
 	config *Config,
 ) {
 	ctx := context.Background()
@@ -184,7 +187,7 @@ func testProduceConsumeStream(
 	}}
 
 	{
-		stream, err := client.ProduceStream(ctx)
+		stream, err := rootClient.ProduceStream(ctx)
 		require.NoError(t, err)
 
 		for offset, record := range records {
@@ -206,7 +209,7 @@ func testProduceConsumeStream(
 	}
 
 	{
-		stream, err := client.ConsumeStream(
+		stream, err := rootClient.ConsumeStream(
 			ctx,
 			&api.ConsumeRequest{Offset: 0},
 		)
